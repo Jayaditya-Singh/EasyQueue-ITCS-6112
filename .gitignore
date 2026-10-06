@@ -1,5 +1,6 @@
 # Ignore IDE settings
 .idea/
+backend/.idea/
 
 # Ignore Python cache and virtual environments
 __pycache__/

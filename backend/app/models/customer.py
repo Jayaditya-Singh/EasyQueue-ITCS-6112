@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String
 from app.db.connection import Base
 
 class Customer(Base):
-    __tablename__ = "Customer"
+    __tablename__ = "customers"
 
     customer_id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)

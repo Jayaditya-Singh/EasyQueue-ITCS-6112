@@ -3,6 +3,7 @@
 backend/.idea/
 
 # Ignore Python cache and virtual environments
+.env
 venv/
 .venv/
 __pycache__/

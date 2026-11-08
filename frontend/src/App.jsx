@@ -1,34 +1,12 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import StaffDashboard from './pages/Staff/StaffDashboard'
-
-function PlaceholderPage() {
-  return (
-    <div className="customer-app">
-      <header className="app-header">EasyQueue</header>
-      <main className="page">
-        <h1>Check in</h1>
-        <div className="card">
-          <p>Service selection will go here.</p>
-          <button type="button">Join Queue</button>
-        </div>
-        <button type="button" className="secondary">
-          Leave Queue
-        </button>
-        <p className="muted">
-          Frontend setup only, not connected to the backend yet.
-        </p>
-      </main>
-    </div>
-  )
-}
+import CheckIn from './pages/Customer/CheckIn.jsx'
 
 export default function App() {
   return (
     <BrowserRouter>
-      <header className="app-header">EasyQueue</header>
-
       <Routes>
-        <Route path="/" element={<PlaceholderPage />} />
+        <Route path="/" element={<CheckIn />} />
         <Route path="/staff" element={<StaffDashboard />} />
       </Routes>
     </BrowserRouter>

@@ -9,33 +9,32 @@ MySQL
 PyMySQL
 Uvicorn
 Setup
+
 1. Create a Virtual Environment
 python -m venv venv
 Activate:
-
 Windows PowerShell:
-
 .\venv\Scripts\Activate.ps1
+
 2. Install Dependencies
 pip install -r requirements.txt
+
 3. Create MySQL Database
 Open MySQL Workbench and run:
-
 CREATE DATABASE easyqueue;
+
 4. Create .env File
 Create a file named .env in the backend directory.
 
 Example:
-
 DATABASE_URL=mysql+pymysql://root:YOUR_PASSWORD@localhost:3306/easyqueue
 If your password contains special characters such as @, URL encode them.
 
 Example:
-
 DATABASE_URL=mysql+pymysql://root:MyPassword%40@localhost:3306/easyqueue
+
 5. Initialize Database Tables
 Run:
-
 python -m app.db.init_db
 This creates the database tables automatically.
 
@@ -73,6 +72,7 @@ Customer
 ServiceType
 QueueEntry
 StaffAction
+
 Team Notes
 Do not commit .env
 Do not commit venv

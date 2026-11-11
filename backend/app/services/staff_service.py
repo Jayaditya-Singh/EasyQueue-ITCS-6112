@@ -1,49 +1,69 @@
 from sqlalchemy.orm import Session
 
+from app.constants.enums import QueueStatus, StaffActionType
+from app.repositories.history_repo import log_action
 from app.repositories.queue_repo import (
-    get_active_queue,
-    update_queue_status
+    count_by_status,
+    get_queue_entry_by_customer_id,
+    get_waiting_queue,
+    update_queue_status,
 )
+from app.services.errors import ConflictError, NotFoundError
+from app.services.prediction_service import recalculate_queue
 
-from app.repositories.customer_repo import (
-    get_customer_by_id
-)
 
-from app.constants.enums import QueueStatus
+def _change_status(
+        db: Session,
+        customer_id: int,
+        allowed_from: tuple[str, ...],
+        new_status: str,
+        action: StaffActionType
+):
+    entry = get_queue_entry_by_customer_id(db, customer_id)
+
+    if not entry:
+        raise NotFoundError("Customer is not in the queue.")
+
+    if entry.status not in allowed_from:
+        raise ConflictError(
+            f"Cannot change status from {entry.status} to {new_status}."
+        )
+
+    update_queue_status(db, customer_id, new_status)
+    log_action(db, customer_id, action.value)
+    recalculate_queue(db)
+    db.refresh(entry)
+
+    return entry
 
 
 def call_next_customer(db: Session):
-    queue = get_active_queue(db)
+    """Call the first person who is still WAITING (skips anyone already
+    called or being served). Returns None if nobody is waiting."""
+    waiting = get_waiting_queue(db)
 
-    if not queue:
+    if not waiting:
         return None
 
-    next_customer = queue[0]
-
-    update_queue_status(
+    return _change_status(
         db,
-        next_customer.customer_id,
-        QueueStatus.CALLED.value
+        waiting[0].customer_id,
+        allowed_from=(QueueStatus.WAITING.value,),
+        new_status=QueueStatus.CALLED.value,
+        action=StaffActionType.CALLED,
     )
-
-    return next_customer
 
 
 def start_service(
         db: Session,
         customer_id: int
 ):
-    customer = get_customer_by_id(db, customer_id)
-
-    if not customer:
-        raise ValueError(
-            "Customer not found."
-        )
-
-    return update_queue_status(
+    return _change_status(
         db,
         customer_id,
-        QueueStatus.IN_SERVICE.value
+        allowed_from=(QueueStatus.WAITING.value, QueueStatus.CALLED.value),
+        new_status=QueueStatus.IN_SERVICE.value,
+        action=StaffActionType.STARTED_SERVICE,
     )
 
 
@@ -51,47 +71,22 @@ def complete_service(
         db: Session,
         customer_id: int
 ):
-    customer = get_customer_by_id(db, customer_id)
-
-    if not customer:
-        raise ValueError(
-            "Customer not found."
-        )
-
-    return update_queue_status(
+    return _change_status(
         db,
         customer_id,
-        QueueStatus.COMPLETED.value
+        allowed_from=(QueueStatus.CALLED.value, QueueStatus.IN_SERVICE.value),
+        new_status=QueueStatus.COMPLETED.value,
+        action=StaffActionType.COMPLETED_SERVICE,
     )
 
 
 def get_dashboard_summary(
         db: Session
 ):
-    queue = get_active_queue(db)
-
-    waiting = 0
-    called = 0
-    in_service = 0
-    completed = 0
-
-    for entry in queue:
-
-        if entry.status == QueueStatus.WAITING.value:
-            waiting += 1
-
-        elif entry.status == QueueStatus.CALLED.value:
-            called += 1
-
-        elif entry.status == QueueStatus.IN_SERVICE.value:
-            in_service += 1
-
-        elif entry.status == QueueStatus.COMPLETED.value:
-            completed += 1
-
+    # Keys match StaffQueueSummary in app/schemas/staff_schema.py
     return {
-        "waiting_customers": waiting,
-        "called_customers": called,
-        "customers_in_service": in_service,
-        "completed_customers": completed
+        "waiting_customers": count_by_status(db, QueueStatus.WAITING.value),
+        "called_customers": count_by_status(db, QueueStatus.CALLED.value),
+        "customers_in_service": count_by_status(db, QueueStatus.IN_SERVICE.value),
+        "customers_completed": count_by_status(db, QueueStatus.COMPLETED.value),
     }

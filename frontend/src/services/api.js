@@ -15,6 +15,17 @@ async function request(path, options = {}) {
   return response.json()
 }
 
+export function createCustomer(name, phoneNumber) {
+  return request('/customers', {
+    method: 'POST',
+    body: JSON.stringify({ name, phone_number: phoneNumber }),
+  })
+}
+
+export function getServices() {
+  return request('/services')
+}
+
 export function joinQueue(customerId, serviceType) {
   return request('/queue/join', {
     method: 'POST',

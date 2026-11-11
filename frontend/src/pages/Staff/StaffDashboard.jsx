@@ -33,7 +33,7 @@ export default function StaffDashboard() {
       if (Array.isArray(queueData.customers)) {
         setQueue(queueData.customers.map((entry, index) => ({
           ...entry,
-          joined: entry.joined || '—',
+          joined: entry.joined || (entry.join_time ? new Date(entry.join_time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '—'),
           window: entry.window || null,
           position: entry.position || index + 1,
           estimated_wait_time: entry.estimated_wait_time ?? (entry.status === 'WAITING' ? (entry.position || index + 1) * 6 : 0),

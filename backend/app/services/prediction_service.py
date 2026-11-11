@@ -1,8 +1,8 @@
 from app.repositories.queue_repo import get_active_queue
 from app.models.service_type import ServiceType
 from sqlalchemy.orm import Session
+from app.config import DEFAULT_SERVICE_DURATION
 
-DEFAULT_SERVICE_DURATION = 15
 
 def get_average_service_duration(
         db: Session,

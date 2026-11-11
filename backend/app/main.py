@@ -4,8 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.customer_routes import router as customer_router
 from app.api.queue_routes import router as queue_router
 from app.api.staff_routes import router as staff_router
+from app.config import API_TITLE
 
-app = FastAPI(title="EasyQueue API")
+app = FastAPI(title=API_TITLE)
 
 app.add_middleware(
     CORSMiddleware,

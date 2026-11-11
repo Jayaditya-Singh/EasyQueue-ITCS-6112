@@ -9,6 +9,8 @@ from app.repositories.customer_repo import (
     get_customer_by_id
 )
 
+from app.constants.enums import QueueStatus
+
 
 def call_next_customer(db: Session):
     queue = get_active_queue(db)
@@ -21,7 +23,7 @@ def call_next_customer(db: Session):
     update_queue_status(
         db,
         next_customer.customer_id,
-        "CALLED"
+        QueueStatus.CALLED.value
     )
 
     return next_customer
@@ -41,7 +43,7 @@ def start_service(
     return update_queue_status(
         db,
         customer_id,
-        "IN_SERVICE"
+        QueueStatus.IN_SERVICE.value
     )
 
 
@@ -59,7 +61,7 @@ def complete_service(
     return update_queue_status(
         db,
         customer_id,
-        "COMPLETED"
+        QueueStatus.COMPLETED.value
     )
 
 
@@ -75,16 +77,16 @@ def get_dashboard_summary(
 
     for entry in queue:
 
-        if entry.status == "WAITING":
+        if entry.status == QueueStatus.WAITING.value:
             waiting += 1
 
-        elif entry.status == "CALLED":
+        elif entry.status == QueueStatus.CALLED.value:
             called += 1
 
-        elif entry.status == "IN_SERVICE":
+        elif entry.status == QueueStatus.IN_SERVICE.value:
             in_service += 1
 
-        elif entry.status == "COMPLETED":
+        elif entry.status == QueueStatus.COMPLETED.value:
             completed += 1
 
     return {

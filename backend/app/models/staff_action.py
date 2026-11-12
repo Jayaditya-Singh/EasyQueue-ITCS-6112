@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from datetime import datetime
 
 from app.db.connection import Base
+from app.utils.time_utils import utc_now
 
 
 class StaffAction(Base):
@@ -13,7 +13,7 @@ class StaffAction(Base):
 
     action_type = Column(String(50), nullable=False)
 
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=utc_now)
 
     def __repr__(self):
         return (

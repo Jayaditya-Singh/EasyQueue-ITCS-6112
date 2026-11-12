@@ -1,7 +1,8 @@
 from sqlalchemy import Column, Integer, DateTime, ForeignKey, String
-from datetime import datetime
+from sqlalchemy.orm import relationship
 
 from app.db.connection import Base
+from app.utils.time_utils import utc_now
 
 
 class QueueEntry(Base):
@@ -19,7 +20,12 @@ class QueueEntry(Base):
 
     estimated_wait_time = Column(Integer)
 
-    join_time = Column(DateTime, default=datetime.utcnow)
+    join_time = Column(DateTime, default=utc_now)
+
+    # Python-side links only (no schema change); lets routes read the
+    # customer's name and the service name without extra queries
+    customer = relationship("Customer")
+    service = relationship("ServiceType")
 
     def __repr__(self):
         return (

@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { joinQueue } from '../../services/api.js'
+import { useEffect, useState } from 'react'
+import { createCustomer, getServices, joinQueue } from '../../services/api.js'
 
-// hardcoded until the backend has an endpoint for services
-const SERVICE_TYPES = [
+// Used only if GET /services can't be reached
+const FALLBACK_SERVICE_TYPES = [
   'License Renewal',
   'Real ID',
   'Vehicle Registration',
@@ -10,17 +10,40 @@ const SERVICE_TYPES = [
   'State ID',
 ]
 
-// join endpoint expects customer id
-const DEMO_CUSTOMER_ID = 1
+// FastAPI validation errors come back as JSON with a "detail" field
+function readableError(err) {
+  const json = err.message.slice(err.message.indexOf('{'))
+  try {
+    const { detail } = JSON.parse(json)
+    if (typeof detail === 'string') return detail
+    if (Array.isArray(detail)) return detail.map((d) => d.msg.replace(/^Value error, /, '')).join(' ')
+  } catch {
+    // not JSON; fall through
+  }
+  return err.message
+}
 
 export default function CheckIn() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
-  const [serviceType, setServiceType] = useState(SERVICE_TYPES[0])
+  const [serviceTypes, setServiceTypes] = useState(FALLBACK_SERVICE_TYPES)
+  const [serviceType, setServiceType] = useState(FALLBACK_SERVICE_TYPES[0])
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState(null)
   const [error, setError] = useState(null)
+
+  useEffect(() => {
+    getServices()
+      .then((services) => {
+        const names = services.map((service) => service.service_name)
+        if (names.length > 0) {
+          setServiceTypes(names)
+          setServiceType(names[0])
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -29,10 +52,11 @@ export default function CheckIn() {
     setError(null)
 
     try {
-      const result = await joinQueue(DEMO_CUSTOMER_ID, serviceType)
+      const customer = await createCustomer(`${firstName} ${lastName}`, phone)
+      const result = await joinQueue(customer.customer_id, serviceType)
       setMessage(result.message)
     } catch (err) {
-      setError(err.message)
+      setError(readableError(err))
     }
 
     setSubmitting(false)
@@ -76,7 +100,7 @@ export default function CheckIn() {
           </label>
           <fieldset className="service-selector">
             <legend>What are you here for?</legend>
-            {SERVICE_TYPES.map((service) => (
+            {serviceTypes.map((service) => (
               <label
                 key={service}
                 className={service === serviceType ? 'service-option selected' : 'service-option'}

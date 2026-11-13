@@ -9,33 +9,32 @@ MySQL
 PyMySQL
 Uvicorn
 Setup
+
 1. Create a Virtual Environment
 python -m venv venv
 Activate:
-
 Windows PowerShell:
-
 .\venv\Scripts\Activate.ps1
+
 2. Install Dependencies
 pip install -r requirements.txt
+
 3. Create MySQL Database
 Open MySQL Workbench and run:
-
 CREATE DATABASE easyqueue;
+
 4. Create .env File
 Create a file named .env in the backend directory.
 
 Example:
-
 DATABASE_URL=mysql+pymysql://root:YOUR_PASSWORD@localhost:3306/easyqueue
 If your password contains special characters such as @, URL encode them.
 
 Example:
-
 DATABASE_URL=mysql+pymysql://root:MyPassword%40@localhost:3306/easyqueue
+
 5. Initialize Database Tables
 Run:
-
 python -m app.db.init_db
 This creates the database tables automatically.
 
@@ -73,8 +72,29 @@ Customer
 ServiceType
 QueueEntry
 StaffAction
+
 Team Notes
 Do not commit .env
 Do not commit venv
 Pull from main before beginning work
 Create feature branches for major changes when possible
+
+Running Tests
+The tests use an in-memory SQLite database, so MySQL does not need to be running.
+From the backend directory:
+pytest
+
+API Endpoints
+POST   /customers                         Register a customer (name, phone_number)
+GET    /customers/{customer_id}           Get a customer
+GET    /services                          List service types (seeded automatically on startup)
+POST   /queue/join                        Join the queue (customer_id + service_type name or service_id)
+GET    /queue/status/{customer_id}        Position, wait estimate, and status
+DELETE /queue/leave/{customer_id}         Leave the queue
+GET    /queue/active                      Everyone currently waiting, called, or in service
+GET    /queue/metrics                     Average and longest wait
+POST   /staff/call-next                   Call the next waiting customer
+POST   /staff/start-service/{customer_id} Mark a customer as being served
+POST   /staff/complete-service/{customer_id}
+GET    /staff/summary                     Counts by status for the dashboard
+GET    /staff/history                     Recent staff actions

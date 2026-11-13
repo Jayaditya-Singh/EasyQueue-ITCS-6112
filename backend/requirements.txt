@@ -4,3 +4,7 @@ sqlalchemy
 pymysql
 python-dotenv
 pydantic-settings
+
+# Testing
+pytest
+httpx

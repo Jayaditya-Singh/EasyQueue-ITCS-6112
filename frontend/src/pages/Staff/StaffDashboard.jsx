@@ -117,8 +117,7 @@ export default function StaffDashboard() {
   return (
     <div className="simple-app" id="dashboard">
       <header className="simple-header">
-        <a className="simple-logo" href="#dashboard">EasyQueue</a>
-        <span>Staff dashboard</span>
+        <span className="simple-header-title">Staff dashboard</span>
         <button className="simple-refresh" onClick={refresh} aria-label="Refresh queue">Refresh queue</button>
       </header>
       <div className="simple-layout">
@@ -162,8 +161,7 @@ export default function StaffDashboard() {
           <section className="simple-overview" id="queue">
             <div className="simple-section-title"><div><h2>General service queue overview</h2><p>{counts.waiting} customers waiting · {counts.inService} in service · {completed} completed today</p></div><label className="simple-search"><span>Search</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Name or service" /></label></div>
             <div className="simple-queue-list">{visibleQueue.map((person) => <article className="simple-queue-row" key={person.customer_id}>
-              <span className="simple-position">{person.position}</span><div className="simple-person"><strong>{person.customer_name}</strong><span>{person.service_type} · EQ-{person.customer_id}</span></div><span className="simple-wait">{person.status === 'WAITING' ? `~${person.estimated_wait_time ?? person.position * 6} min wait` : person.status === 'CALLED' ? 'Ready now' : 'In service'}</span><span className={`simple-tag simple-tag-${person.status.toLowerCase()}`}>{displayStatus(person.status)}</span>
-              <span className="simple-window">{person.window || 'Waiting for window'}</span>
+              <span className="simple-position">{person.position}</span><div className="simple-person"><strong>{person.customer_name}</strong><span>{person.service_type}</span></div><span className="simple-wait">{person.status === 'WAITING' ? `~${person.estimated_wait_time ?? person.position * 6} min wait` : person.status === 'CALLED' ? 'Ready now' : 'In service'}</span>
               <div className="simple-row-actions">{person.status === 'WAITING' && <button onClick={() => setQueue((items) => items.map((item) => item.customer_id === person.customer_id ? { ...item, status: 'CALLED', window: 'Window 01' } : item))}>Call</button>}{person.status === 'CALLED' && <button onClick={() => updateStatus(person, 'start')}>Start</button>}{person.status === 'IN_SERVICE' && <button onClick={() => updateStatus(person, 'complete')}>Complete</button>}<button className="simple-remove" onClick={() => removeCustomer(person)} aria-label={`Remove ${person.customer_name}`}>Remove</button></div>
             </article>)}{visibleQueue.length === 0 && <p className="simple-empty">No customers in this queue.</p>}</div>
           </section>

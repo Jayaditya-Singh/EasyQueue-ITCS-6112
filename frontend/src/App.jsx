@@ -1,5 +1,6 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import StaffDashboard from './pages/Staff/StaffDashboard'
+import AdminDashboard from './pages/Admin/AdminDashboard'
 
 function PlaceholderPage() {
   return (
@@ -22,11 +23,18 @@ function PlaceholderPage() {
 export default function App() {
   return (
     <BrowserRouter>
-      <header className="app-header">EasyQueue</header>
+      <header className="app-header">
+        <Link to="/" className="app-brand">EasyQueue</Link>
+        <nav aria-label="Dashboards">
+          <Link to="/staff">Staff dashboard</Link>
+          <Link to="/admin">Administrator dashboard</Link>
+        </nav>
+      </header>
 
       <Routes>
         <Route path="/" element={<PlaceholderPage />} />
         <Route path="/staff" element={<StaffDashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
   )

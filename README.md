@@ -98,3 +98,22 @@ POST   /staff/start-service/{customer_id} Mark a customer as being served
 POST   /staff/complete-service/{customer_id}
 GET    /staff/summary                     Counts by status for the dashboard
 GET    /staff/history                     Recent staff actions
+
+EasyQueue Frontend
+
+1. Requires Node.js
+
+2. Start backend first
+
+3. In a second Git Bash window, from the repo root
+cd frontend
+npm install                 (first time only)
+npm run dev
+
+4. Open http://localhost:5173
+
+Pages
+Customer CheckIn page: /
+Customer Status page: /status/:id
+Staff Dashboard: /staff
+Administrator Dashboard: /admin

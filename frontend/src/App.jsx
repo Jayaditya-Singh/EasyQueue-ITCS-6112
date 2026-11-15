@@ -1,5 +1,6 @@
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import CheckIn from './pages/Customer/CheckIn.jsx'
+import Status from './pages/Customer/Status.jsx'
 import StaffDashboard from './pages/Staff/StaffDashboard'
 import AdminDashboard from './pages/Admin/AdminDashboard'
 
@@ -23,6 +24,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<CheckIn />} />
+        <Route path="/status/:customerId" element={<Status />} />
         <Route path="/staff" element={<DashboardLayout><StaffDashboard /></DashboardLayout>} />
         <Route path="/admin" element={<DashboardLayout><AdminDashboard /></DashboardLayout>} />
       </Routes>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { createCustomer, getServices, joinQueue } from '../../services/api.js'
 
 // Used only if GET /services can't be reached
@@ -30,8 +31,8 @@ export default function CheckIn() {
   const [serviceTypes, setServiceTypes] = useState(FALLBACK_SERVICE_TYPES)
   const [serviceType, setServiceType] = useState(FALLBACK_SERVICE_TYPES[0])
   const [submitting, setSubmitting] = useState(false)
-  const [message, setMessage] = useState(null)
   const [error, setError] = useState(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     getServices()
@@ -48,13 +49,12 @@ export default function CheckIn() {
   async function handleSubmit(event) {
     event.preventDefault()
     setSubmitting(true)
-    setMessage(null)
     setError(null)
 
     try {
       const customer = await createCustomer(`${firstName} ${lastName}`, phone)
-      const result = await joinQueue(customer.customer_id, serviceType)
-      setMessage(result.message)
+      await joinQueue(customer.customer_id, serviceType)
+      navigate(`/status/${customer.customer_id}`)
     } catch (err) {
       setError(readableError(err))
     }
@@ -117,7 +117,6 @@ export default function CheckIn() {
             ))}
           </fieldset>
           {error && <p className="error">Couldn't join the queue. {error}</p>}
-          {message && <p className="muted">{message}</p>}
           <button type="submit" disabled={submitting}>
             {submitting ? 'Joining…' : 'Join Queue'}
           </button>

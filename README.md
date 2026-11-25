@@ -105,7 +105,7 @@ EasyQueue Frontend
 
 2. Start backend first
 
-3. In a second Git Bash window, from the repo root
+3. In a second terminal, from the repo root
 cd frontend
 npm install                 (first time only)
 npm run dev

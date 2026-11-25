@@ -4,6 +4,7 @@ import { getQueueStatus, leaveQueue } from '../../services/api.js'
 
 // page refresh
 const REFRESH_MS = 15000
+const TICK_MS = 30000
 
 const STATUS_LABELS = {
   WAITING: "You are in line. Thank you for your patience!",
@@ -13,10 +14,8 @@ const STATUS_LABELS = {
   CANCELED: 'You have left the queue',
 }
 
-// wait time
-function expectedTime(waitMinutes) {
-  const time = new Date(Date.now() + waitMinutes * 60000)
-  return time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+function formatTime(timestamp) {
+  return new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 }
 
 export default function Status() {
@@ -25,6 +24,8 @@ export default function Status() {
   const [status, setStatus] = useState(null)
   const [error, setError] = useState(null)
   const [leaving, setLeaving] = useState(false)
+  const [baseline, setBaseline] = useState(null)
+  const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
     let cancelled = false
@@ -35,6 +36,11 @@ export default function Status() {
         if (!cancelled) {
           setStatus(data)
           setError(null)
+          setBaseline((prev) =>
+            prev && prev.wait === data.estimated_wait_time
+              ? prev
+              : { wait: data.estimated_wait_time, since: Date.now() }
+          )
         }
       } catch (err) {
         if (!cancelled) setError(err.message)
@@ -48,6 +54,11 @@ export default function Status() {
       clearInterval(timer)
     }
   }, [customerId])
+
+  useEffect(() => {
+    const clock = setInterval(() => setNow(Date.now()), TICK_MS)
+    return () => clearInterval(clock)
+  }, [])
 
   async function handleLeave() {
     if (!window.confirm('Leave the queue? You will lose your place in line.')) return
@@ -65,6 +76,9 @@ export default function Status() {
   const waiting = status?.status === 'WAITING'
   const canLeave = waiting || status?.status === 'CALLED'
   const finished = status?.status === 'COMPLETED' || status?.status === 'CANCELED'
+  const minutesPassed = baseline ? Math.max(0, Math.floor((now - baseline.since) / 60000)) : 0
+  const remaining = baseline ? Math.max(0, baseline.wait - minutesPassed) : 0
+  const appointment = baseline ? formatTime(baseline.since + baseline.wait * 60000) : ''
 
   return (
     <div className="customer-app">
@@ -80,21 +94,21 @@ export default function Status() {
             {waiting && (
               <div className="stat">
                 <p className="stat-caption">Estimated wait</p>
-                <span className="stat-value">{status.estimated_wait_time}</span>
+                <span className="stat-value">{remaining}</span>
                 <span className="stat-unit"> min</span>
                 <p className="stat-caption">
-                  Estimated appointment time <strong>{expectedTime(status.estimated_wait_time)}</strong>
+                  Estimated appointment time <strong>{appointment}</strong>
                 </p>
               </div>
             )}
 
-{waiting && (
-  <>
-    <p>Name: <strong>{status.customer_name}</strong></p>
-    <p>Service: <strong>{status.service_type}</strong></p>
-    <p>Position in line: <strong>{status.position}</strong></p>
-  </>
-)}
+            {waiting && (
+              <>
+                <p>Name: <strong>{status.customer_name}</strong></p>
+                <p>Service: <strong>{status.service_type}</strong></p>
+                <p>Position in line: <strong>{status.position}</strong></p>
+              </>
+            )}
           </div>
         )}
 
